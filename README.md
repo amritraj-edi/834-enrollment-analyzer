@@ -21,6 +21,14 @@ A browser-based utility for exploring ANSI X12 834 enrollment files (implementat
 
 No package installation or build process is required.
 
+## 🚀 Live Demo
+
+**[Open the 834 Enrollment Analyzer](https://amritraj-edi.github.io/834-enrollment-analyzer/)**
+
+Try the browser-based tool to inspect sample X12 834 enrollment data, explore member and segment details, and export analysis results.
+
+> **Note:** Use synthetic sample data for demonstrations. This tool is intended for portfolio and learning purposes; it is not a certified X12 compliance validator or a production enrollment-processing system.
+
 ## Privacy and data handling
 
 The page's own implementation reads the selected file through the browser File API and processes it with local JavaScript. The code does not include an EDI upload request, a backend endpoint, or an AI API integration. Export files are generated through browser download APIs.
