@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="A browser-based ANSI X12 834 enrollment file analyzer and data export utility.">
+<title>834 Enrollment Analyzer | Browser-Based EDI Utility</title>
+<style>
+:root{--bg:#f5f7fa;--panel:#fff;--ink:#0f1b33;--mute:#5b6882;--line:#dde3ec;--acc:#0b6e8a;--acc-s:#e1f1f6;--ok:#12775a;--ok-s:#dff3ec;--bad:#b4420e;--bad-s:#fbe9de;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1424;--panel:#141d31;--ink:#e8edf6;--mute:#93a0ba;--line:#26324b;--acc:#58b8d6;--acc-s:#12303c;--ok:#52c9a3;--ok-s:#0f2f27;--bad:#f09460;--bad-s:#37200f}}
+:root[data-theme="dark"]{--bg:#0d1424;--panel:#141d31;--ink:#e8edf6;--mute:#93a0ba;--line:#26324b;--acc:#58b8d6;--acc-s:#12303c;--ok:#52c9a3;--ok-s:#0f2f27;--bad:#f09460;--bad-s:#37200f}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.mono,code{font-family:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;font-size:12.5px}
+header{display:flex;align-items:center;gap:16px;padding:14px 28px;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
+header h1{font-size:18px;margin:0;font-weight:700}
+header p{margin:0;color:var(--mute);font-size:13px}
+.sp{flex:1}
+button,.btn{font:inherit;font-size:13.5px;font-weight:600;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:7px 14px;border-radius:6px;cursor:pointer}
+button:hover{border-color:var(--acc)}button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+button.pri{background:var(--acc);color:#fff;border-color:var(--acc)}
+:root:not([data-theme="light"]) button.pri{color:#06121a}
+main{max-width:1240px;margin:0 auto;padding:24px 28px 60px}
+#drop{border:2px dashed var(--line);border-radius:10px;padding:34px;text-align:center;background:var(--panel);transition:.15s}
+#drop.on{border-color:var(--acc);background:var(--acc-s)}
+#drop h2{margin:0 0 6px;font-size:20px}#drop p{margin:4px 0 14px;color:var(--mute)}
+#drop .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+textarea{width:100%;min-height:90px;margin-top:14px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);padding:10px;resize:vertical}
+.warn{margin:14px 0;padding:10px 14px;border-radius:6px;background:var(--bad-s);color:var(--bad);font-size:13.5px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:26px 0 20px;overflow-x:auto}
+.tabs button{border:0;border-bottom:3px solid transparent;border-radius:0;background:none;padding:10px 16px;color:var(--mute);white-space:nowrap}
+.tabs button.on{color:var(--ink);border-color:var(--acc)}
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px 18px}
+.card h3{margin:0 0 10px;font-size:14px;color:var(--mute);font-weight:600}
+.big{font-size:34px;font-weight:700;line-height:1.1}
+.split{display:flex;gap:10px;margin-top:8px;font-size:13px;flex-wrap:wrap}
+.pill{padding:2px 9px;border-radius:99px;font-weight:600;font-size:12.5px}
+.pill.a{background:var(--ok-s);color:var(--ok)}.pill.t{background:var(--bad-s);color:var(--bad)}.pill.n{background:var(--acc-s);color:var(--acc)}
+.src{display:block;margin-top:6px;color:var(--mute);font-size:11.5px}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:4px 12px;font-size:14px}
+.kv dt{color:var(--mute)}.kv dd{margin:0;font-weight:500;word-break:break-word}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--mute);font-weight:600;font-size:12.5px;background:var(--bg);position:sticky;top:0}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+.bar{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+input[type=search],select{font:inherit;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink)}
+input[type=search]{min-width:240px}
+.seg{border-bottom:1px solid var(--line);padding:6px 12px}
+.seg summary{cursor:pointer;display:flex;gap:12px;align-items:baseline;list-style:none}
+.seg summary::-webkit-details-marker{display:none}
+.lp{min-width:64px;color:var(--acc);font-weight:500}
+.seg .raw{color:var(--mute);overflow-wrap:anywhere}
+.seg table{margin:8px 0 6px;font-size:12.5px}
+.seg td,.seg th{padding:3px 10px}
+.hid{display:none}.card .bar{align-items:center}
+.mut{color:var(--mute)}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>834 Enrollment Analyzer</h1><p>ANSI X12 834 (005010X220A1) · analysis runs in this browser</p></div>
+  <span class="sp"></span>
+  <button id="theme" aria-label="Toggle theme">Theme</button>
+</header>
+<main>
+  <section id="drop">
+    <h2>Drop an 834 file here</h2>
+    <p>.edi, .x12, .txt or other text files. Delimiters are detected from the ISA header.</p>
+<p class="mut" style="font-size:12px;margin-top:8px">This page contains no file-upload or AI API code. Use synthetic data for demos; follow your organization’s privacy and security policies before handling production data.</p>
+    <div class="row">
+      <label class="btn pri" for="file" tabindex="0">Choose file</label>
+      <input id="file" type="file" class="hid" accept=".edi,.x12,.txt,.dat,text/plain">
+      <button id="sample">Load sample 834</button>
+      <button id="paste">Analyze pasted text</button>
+    </div>
+    <textarea id="txt" placeholder="Or paste raw X12 content here" aria-label="Paste X12 content"></textarea>
+  </section>
+  <div id="out" class="hid"></div>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fd=d=>d&&d.length===8?d.slice(4,6)+'/'+d.slice(6)+'/'+d.slice(0,4):(d||'');
+const today=(()=>{const t=new Date();return t.getFullYear()+String(t.getMonth()+1).padStart(2,'0')+String(t.getDate()).padStart(2,'0')})();
+
+/* ---- X12 code tables (834 005010X220A1) ---- */
+const MAINT={'001':'Change','021':'Addition','024':'Cancel / Term','025':'Reinstatement','030':'Audit / Compare','026':'Correction'};
+const REL={'18':'Self','01':'Spouse','19':'Child','20':'Employee','21':'Unknown','34':'Other adult','53':'Life partner','G8':'Other','G9':'Other'};
+const BSTAT={A:'Active',C:'COBRA',S:'Surviving insured',T:'TEFRA'};
+const LINE={HLT:'Health',DEN:'Dental',VIS:'Vision',EPO:'EPO',HMO:'HMO',PPO:'PPO',POS:'POS',LTD:'Long-term disability',STD:'Short-term disability',AG:'Life',AH:'Accident',AJ:'Critical illness'};
+const LEVEL={EMP:'Employee only',ESP:'Employee + spouse',ECH:'Employee + child(ren)',FAM:'Family',IND:'Individual',CHD:'Child only',DEP:'Dependent only',SPC:'Spouse + children',SPO:'Spouse only'};
+const EN={ISA:['Auth Qual','Auth Info','Sec Qual','Sec Info','Sender Qual','Sender ID','Receiver Qual','Receiver ID','Date','Time','Repetition Sep','Version','Control #','Ack Req','Usage','Sub-element Sep'],
+GS:['Func Code','Sender Code','Receiver Code','Date','Time','Group Control #','Resp Agency','Version'],ST:['Transaction Set','Control #','Impl Guide'],
+BGN:['Purpose','Reference ID','Date','Time','Time Code','Orig Ref','Txn Type','Action Code'],
+N1:['Entity ID Code','Name','ID Qualifier','ID'],INS:['Subscriber Ind','Relationship','Maint Type','Maint Reason','Benefit Status','Medicare Status','COBRA Event','Employment Status','Student Status','Handicap','Death Date','Confidential','City','State','Country','Birth Seq'],
+REF:['Qualifier','Value'],DTP:['Qualifier','Format','Date'],NM1:['Entity ID','Entity Type','Last/Org','First','Middle','Prefix','Suffix','ID Qualifier','ID'],
+N3:['Address 1','Address 2'],N4:['City','State','ZIP'],DMG:['Format','DOB','Gender','Marital','Race'],PER:['Function','Name','Comm Qual','Comm #'],
+HD:['Maint Type','Maint Reason','Insurance Line','Plan Description','Coverage Level'],SE:['Segment Count','Control #'],LX:['Assigned #']};
+const DTPQ={'348':'Benefit begin','349':'Benefit end','336':'Employment begin','337':'Employment end','303':'Maintenance effective','356':'Eligibility begin','357':'Eligibility end','007':'Effective','050':'Received','344':'Coordination begin'};
+
+/* ---- parser: reads ISA delimiters, then walks segments/loops ---- */
+function parse(raw){
+  const t=raw.replace(/^\uFEFF/,'').trim();
+  if(!t.startsWith('ISA')||t.length<106) throw new Error('This does not look like an X12 file. An interchange must start with a 106-character ISA segment.');
+  const es=t[3], ss=t[105], segs=[];
+  t.split(ss).forEach(s=>{s=s.replace(/^[\r\n\s]+|[\r\n\s]+$/g,'');if(s){const el=s.split(es);segs.push({id:el[0],el,raw:s})}});
+  const H={sponsor:null,payer:null,tpa:null,broker:null,refs:{},dtps:{}},warn=[],members=[];
+  let m=null,hd=null,inST=false,stStart=0,stCount=0;
+  segs.forEach((s,i)=>{
+    const e=s.el,v=k=>(e[k]||'').trim();let loop='Envelope';
+    switch(s.id){
+      case 'ISA':H.sender=v(6);H.receiver=v(8);H.isaDate=v(9);H.control=v(13);H.usage=v(15);break;
+      case 'GS':H.gsSender=v(2);H.gsReceiver=v(3);H.version=v(8);break;
+      case 'ST':H.txn=v(1);inST=true;stStart=i;if(v(1)!=='834')warn.push('Transaction set is '+v(1)+', not 834. Results may be empty.');loop='Header';break;
+      case 'BGN':H.purpose=v(1);H.ref=v(2);H.fileDate=v(3);H.action=v(8);loop='Header';break;
+      case 'N1':{const o={code:v(1),name:v(2),idq:v(3),id:v(4),seg:'N1*'+v(1)};
+        if(v(1)==='P5'){H.sponsor=o;loop='1000A Sponsor'}else if(v(1)==='IN'){H.payer=o;loop='1000B Payer'}
+        else if(v(1)==='TV'||v(1)==='BO'){H[v(1)==='TV'?'tpa':'broker']=o;loop='1000C TPA/Broker'}else loop='1000';break}
+      case 'INS':m={sub:v(1)==='Y',rel:v(2),maint:v(3),reason:v(4),bstat:v(5),emp:v(8),refs:{},dtps:{},hds:[],idx:i};hd=null;members.push(m);loop='2000 Member';break;
+      case 'REF':if(hd){hd.refs[v(1)]=v(2);loop='2300 Coverage'}else if(m){m.refs[v(1)]=v(2);loop='2000 Member'}else{H.refs[v(1)]=v(2);loop='Header'}break;
+      case 'DTP':if(hd){hd.dtps[v(1)]=v(3);loop='2300 Coverage'}else if(m){m.dtps[v(1)]=v(3);loop='2000 Member'}else{H.dtps[v(1)]=v(3);loop='Header'}break;
+      case 'NM1':if(m&&v(1)==='IL'){hd=null;Object.assign(m,{last:v(3),first:v(4),mid:v(5),idq:v(8),id:v(9)});loop='2100A Member name'}
+        else if(m&&v(1)==='P3'){m.pcp=v(3)+' '+v(4);loop='2310 Provider'}else loop=hd?'2300 Coverage':'2100 Other';break;
+      case 'N3':if(m&&!hd){m.addr=v(1)+(v(2)?' '+v(2):'');loop='2100A Member name'}break;
+      case 'N4':if(m&&!hd){m.city=v(1);m.st=v(2);m.zip=v(3);loop='2100A Member name'}break;
+      case 'DMG':if(m){m.dob=v(2);m.gender=v(3);loop='2100A Member name'}break;
+      case 'PER':if(m){m.phone=v(4);loop='2100A Member name'}break;
+      case 'HD':hd={maint:v(1),line:v(3),plan:v(4),level:v(5),refs:{},dtps:{}};if(m)m.hds.push(hd);loop='2300 Coverage';break;
+      case 'LX':loop='2310 Provider';break;
+      case 'COB':loop='2320 COB';break;
+      case 'SE':if(inST){stCount=i-stStart+1;if(+v(1)!==stCount)warn.push('SE01 says '+v(1)+' segments but '+stCount+' were found.');inST=false}loop='Trailer';break;
+      case 'GE':case 'IEA':loop='Envelope';break;
+      default:loop=hd?'2300 Coverage':(m?'2000 Member':'Header');
+    }
+    s.loop=loop;
+  });
+  if(inST)warn.push('No SE trailer segment found; the file may be truncated.');
+  // derive per-member values
+  let lastSub='';
+  members.forEach(x=>{
+    const f=x.hds[0]||{dtps:{},refs:{}};
+    x.subId=x.refs['0F']||lastSub;if(x.sub)lastSub=x.subId;
+    x.begin=x.dtps['348']||f.dtps['348']||'';
+    x.end=x.dtps['349']||(x.hds.map(h=>h.dtps['349']).filter(Boolean).sort().pop())||'';
+    x.group=x.refs['1L']||f.refs['1L']||'';
+    x.name=[x.first,x.mid,x.last].filter(Boolean).join(' ')||'(no name)';
+    const term=(mt,end)=>mt==='024'||(end&&end<today);
+    x.term=term(x.maint,x.end)||(x.hds.length>0&&x.hds.every(h=>term(h.maint,h.dtps['349']||x.end)));
+    x.hds.forEach(h=>{h.term=x.term||term(h.maint,h.dtps['349']);h.key=(h.line||'?')+'|'+(h.plan||'Plan not specified')});
+  });
+  return{H,members,segs,warn};
+}
+
+/* ---- summarise ---- */
+function summarise(P){
+  const M=P.members,c=(f)=>M.filter(f).length;
+  const S={total:M.length,emp:c(x=>x.sub),dep:c(x=>!x.sub)};
+  S.empA=c(x=>x.sub&&!x.term);S.empT=S.emp-S.empA;S.depA=c(x=>!x.sub&&!x.term);S.depT=S.dep-S.depA;
+  S.act=S.empA+S.depA;S.trm=S.empT+S.depT;
+  const plans={},tally=(o,k,x)=>{o[k]=(o[k]||0)+1};
+  const lvl={},mt={},bs={},rl={};
+  M.forEach(x=>{
+    tally(mt,MAINT[x.maint]||x.maint||'—');tally(bs,BSTAT[x.bstat]||x.bstat||'—');tally(rl,REL[x.rel]||x.rel||'—');
+    if(!x.hds.length){const p=plans['—|No HD segment']||(plans['—|No HD segment']={eA:0,eT:0,dA:0,dT:0});p[(x.sub?'e':'d')+(x.term?'T':'A')]++}
+    x.hds.forEach(h=>{const p=plans[h.key]||(plans[h.key]={eA:0,eT:0,dA:0,dT:0});p[(x.sub?'e':'d')+(h.term?'T':'A')]++;
+      if(h.level)tally(lvl,(LEVEL[h.level]||h.level)+' ('+h.level+')')});
+  });
+  return{...S,plans,lvl,mt,bs,rl};
+}
+
+/* ---- render ---- */
+let state;
+function render(P){
+  const S=summarise(P),H=P.H;state={P,S};
+  const kv=(k,v,src)=>`<dt>${k}</dt><dd>${v?esc(v):'<span class="mut">Not found</span>'}${src?`<span class="src mono">${src}</span>`:''}</dd>`;
+  const ent=(o,seg)=>o?`${esc(o.name)}${o.id?` <span class="mut">(${esc(o.idq)} ${esc(o.id)})</span>`:''}`:'';
+  const kpi=(t,n,a,b,src)=>`<div class="card"><h3>${t}</h3><div class="big">${n}</div><div class="split"><span class="pill a">${a} active</span><span class="pill t">${b} terminated</span></div><span class="src mono">${src}</span></div>`;
+  const list=o=>Object.entries(o).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<tr><td>${esc(k)}</td><td class="n">${v}</td></tr>`).join('')||'<tr><td class="mut">None</td><td></td></tr>';
+  const planRows=Object.entries(S.plans).map(([k,p])=>{const[l,n]=k.split('|');return`<tr><td>${esc(n)}</td><td>${esc(LINE[l]||l)} <span class="mut mono">${esc(l)}</span></td><td class="n">${p.eA}</td><td class="n">${p.eT}</td><td class="n">${p.dA}</td><td class="n">${p.dT}</td><td class="n"><b>${p.eA+p.eT+p.dA+p.dT}</b></td></tr>`}).join('');
+  const nPlans=Object.keys(S.plans).length;
+  $('#out').innerHTML=`
+  ${P.warn.map(w=>`<div class="warn">${esc(w)}</div>`).join('')}
+  <div class="tabs" role="tablist"><button class="on" data-t="ins">Insights</button><button data-t="mem">Members (${S.total})</button><button data-t="seg">Segments &amp; loops (${P.segs.length})</button><span class="sp"></span><button id="again">New file</button></div>
+  <div id="t-ins"><div class="card" style="margin-bottom:14px"><h3>Download converted data</h3><div class="bar" style="margin:0 0 6px"><button class="pri" data-x="csv">Members CSV</button><button data-x="plans">Plan summary CSV</button><button data-x="xml">XML</button><button data-x="copyxml">Copy XML</button><button data-x="json">JSON</button><span id="msg" class="mut" role="status"></span></div><span class="src">CSV has one row per member per coverage line, with client, carrier and plan fields. XML saves as .xml.txt (rename to .xml).</span></div>
+    <div class="grid g3">
+      <div class="card"><h3>Client &amp; carrier</h3><dl class="kv">
+        ${kv('Client (plan sponsor)',H.sponsor&&H.sponsor.name,'Loop 1000A · N1*P5 · N102')}
+        ${kv('Sponsor ID',H.sponsor&&H.sponsor.id,H.sponsor?'N1*P5 · N104 ('+esc(H.sponsor.idq)+')':'')}
+        ${kv('Carrier (payer)',H.payer&&H.payer.name,'Loop 1000B · N1*IN · N102')}
+        ${kv('Carrier ID',H.payer&&H.payer.id,H.payer?'N1*IN · N104 ('+esc(H.payer.idq)+')':'')}
+        ${H.tpa?kv('TPA / broker',H.tpa.name,'Loop 1000C · N1*TV · N102'):''}
+      </dl></div>
+      <div class="card"><h3>File details</h3><dl class="kv">
+        ${kv('Sender → receiver',(H.sender||'')+' → '+(H.receiver||''),'ISA06 / ISA08')}
+        ${kv('File date',fd(H.fileDate),'BGN03')}
+        ${kv('Reference ID',H.ref,'BGN02')}
+        ${kv('Purpose',({'00':'Original','15':'Re-submission','22':'Information copy'})[H.purpose]||H.purpose,'BGN01')}
+        ${kv('Action',({2:'Change (update)',4:'Verify',RX:'Replace (full file)'})[H.action]||H.action,'BGN08')}
+        ${kv('Usage',H.usage==='P'?'Production':H.usage==='T'?'Test':H.usage,'ISA15')}
+      </dl></div>
+      <div class="card"><h3>Coverage period</h3><dl class="kv">
+        ${kv('Earliest benefit begin',P.members.map(x=>x.begin).filter(Boolean).sort()[0]&&fd(P.members.map(x=>x.begin).filter(Boolean).sort()[0]),'Loop 2000 · DTP*348')}
+        ${kv('Latest benefit end',P.members.map(x=>x.end).filter(Boolean).sort().pop()&&fd(P.members.map(x=>x.end).filter(Boolean).sort().pop()),'Loop 2000 · DTP*349')}
+        ${kv('Group / policy #',P.members.map(x=>x.group).find(Boolean),'REF*1L')}
+        ${kv('Status as of',fd(today),'Terminated = INS03 024 or end date passed')}
+      </dl></div>
+    </div>
+    <div class="grid g4" style="margin-top:14px">
+      ${kpi('Employees (subscribers)',S.emp,S.empA,S.empT,'Loop 2000 · INS01 = Y')}
+      ${kpi('Dependents',S.dep,S.depA,S.depT,'Loop 2000 · INS01 = N')}
+      ${kpi('Total members',S.total,S.act,S.trm,'Count of INS segments')}
+      <div class="card"><h3>Plans in file</h3><div class="big">${nPlans}</div><span class="src mono">Loop 2300 · HD03 + HD04</span></div>
+    </div>
+    <h3 style="margin:26px 0 10px">Enrollment by plan</h3>
+    <div class="tw"><table><thead><tr><th>Plan (HD04)</th><th>Line (HD03)</th><th class="n">Emp active</th><th class="n">Emp termed</th><th class="n">Dep active</th><th class="n">Dep termed</th><th class="n">Total</th></tr></thead><tbody>${planRows||'<tr><td colspan=7 class="mut">No members found</td></tr>'}</tbody></table></div>
+    <div class="grid g4" style="margin-top:20px">
+      <div class="card"><h3>Coverage level · HD05</h3><table><tbody>${list(S.lvl)}</tbody></table></div>
+      <div class="card"><h3>Maintenance type · INS03</h3><table><tbody>${list(S.mt)}</tbody></table></div>
+      <div class="card"><h3>Benefit status · INS05</h3><table><tbody>${list(S.bs)}</tbody></table></div>
+      <div class="card"><h3>Relationship · INS02</h3><table><tbody>${list(S.rl)}</tbody></table></div>
+    </div>
+  </div>
+  <div id="t-mem" class="hid">
+    <div class="bar"><input type="search" id="q" placeholder="Search name, ID or plan" aria-label="Search members">
+      <select id="ft" aria-label="Type"><option value="">All members</option><option value="e">Employees</option><option value="d">Dependents</option></select>
+      <select id="fs" aria-label="Status"><option value="">Any status</option><option value="a">Active</option><option value="t">Terminated</option></select>
+      <span class="sp"></span><button id="csv">Export CSV</button></div>
+    <div class="tw"><table><thead><tr><th>Name</th><th>Type</th><th>Relationship</th><th>Subscriber ID</th><th>Status</th><th>Maint</th><th>Plan(s)</th><th>Coverage</th><th>Begin</th><th>End</th><th>DOB</th></tr></thead><tbody id="mb"></tbody></table></div>
+  </div>
+  <div id="t-seg" class="hid">
+    <p class="mut">Each segment is tagged with the 834 loop it belongs to. Select a row to see its elements.</p>
+    <div class="tw">${P.segs.map(s=>{const n=EN[s.id]||[];const rows=s.el.slice(1).map((x,i)=>x?`<tr><td class="mono">${s.id}${String(i+1).padStart(2,'0')}</td><td>${esc(n[i]||'')}</td><td class="mono">${esc(x)}${s.id==='DTP'&&i==0&&DTPQ[x]?' <span class="mut">'+DTPQ[x]+'</span>':''}</td></tr>`:'').join('');
+      return`<details class="seg"><summary class="mono"><span class="lp">${esc(s.loop)}</span><b>${esc(s.id)}</b><span class="raw">${esc(s.raw.slice(s.id.length+1,140))}</span></summary><table><tbody>${rows}</tbody></table></details>`}).join('')}</div>
+  </div>`;
+  $('#drop').classList.add('hid');$('#out').classList.remove('hid');
+  $('#out').querySelectorAll('.tabs button[data-t]').forEach(b=>b.onclick=()=>{
+    $('#out').querySelectorAll('.tabs button[data-t]').forEach(x=>x.classList.toggle('on',x===b));
+    ['ins','mem','seg'].forEach(k=>$('#t-'+k).classList.toggle('hid',k!==b.dataset.t))});
+  $('#again').onclick=()=>{$('#out').classList.add('hid');$('#drop').classList.remove('hid')};
+  ['q','ft','fs'].forEach(id=>$('#'+id).oninput=members);$('#csv').onclick=()=>exp('csv',true);document.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>exp(b.dataset.x));members();
+}
+function rowsFiltered(){
+  const q=$('#q').value.toLowerCase(),ft=$('#ft').value,fs=$('#fs').value;
+  return state.P.members.filter(x=>(!ft||(ft==='e')===x.sub)&&(!fs||(fs==='t')===!!x.term)&&
+    (!q||[x.name,x.subId,x.id,...x.hds.map(h=>h.plan)].join(' ').toLowerCase().includes(q)));
+}
+const plansOf=x=>x.hds.map(h=>h.plan||h.line).join(', ');
+function members(){
+  $('#mb').innerHTML=rowsFiltered().map(x=>`<tr><td>${esc(x.name)}</td><td>${x.sub?'Employee':'Dependent'}</td><td>${esc(REL[x.rel]||x.rel)}</td><td class="mono">${esc(x.subId)}</td><td><span class="pill ${x.term?'t':'a'}">${x.term?'Terminated':'Active'}</span></td><td>${esc(MAINT[x.maint]||x.maint)}</td><td>${esc(plansOf(x))}</td><td>${esc(x.hds.map(h=>h.level).filter(Boolean).join(', '))}</td><td>${fd(x.begin)}</td><td>${fd(x.end)}</td><td>${fd(x.dob)}</td></tr>`).join('')||'<tr><td colspan=11 class="mut">No members match.</td></tr>';
+}
+function csvOld(){
+  const h=['Name','Type','Relationship','SubscriberID','Status','Maintenance','Plans','Coverage','Begin','End','DOB','Gender','Address','City','State','Zip'];
+  const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  const r=rowsFiltered().map(x=>[x.name,x.sub?'Employee':'Dependent',REL[x.rel]||x.rel,x.subId,x.term?'Terminated':'Active',MAINT[x.maint]||x.maint,plansOf(x),x.hds.map(h=>h.level).join(' '),fd(x.begin),fd(x.end),fd(x.dob),x.gender,x.addr,x.city,x.st,x.zip].map(q).join(','));
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([[h.join(','),...r].join('\n')],{type:'text/csv'}));a.download='834-members.csv';a.click();
+}
+
+/* ---- exports ---- */
+const xe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
+const cq=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+const COLS=['Client','Client ID','Carrier','Carrier ID','File Ref','File Date','Member Type','Relationship','Subscriber ID','Member ID','Last Name','First Name','Middle','DOB','Gender','Address','City','State','Zip','Phone','Maint Type','Maint Reason','Benefit Status','Employment Status','Status','Group/Policy','Insurance Line','Plan','Coverage Level','Coverage Maint','Coverage Begin','Coverage End'];
+function flat(list){const H=state.P.H,o=[];list.forEach(x=>{(x.hds.length?x.hds:[null]).forEach(h=>{const t=h?h.term:x.term;
+ o.push([H.sponsor?.name,H.sponsor?.id,H.payer?.name,H.payer?.id,H.ref,fd(H.fileDate),x.sub?'Employee':'Dependent',REL[x.rel]||x.rel,x.subId,x.id,x.last,x.first,x.mid,fd(x.dob),x.gender,x.addr,x.city,x.st,x.zip,x.phone,MAINT[x.maint]||x.maint,x.reason,BSTAT[x.bstat]||x.bstat,x.emp,t?'Terminated':'Active',(h&&h.refs['1L'])||x.group,h?(LINE[h.line]||h.line):'',h?h.plan:'',h?h.level:'',h?(MAINT[h.maint]||h.maint):'',fd((h&&h.dtps['348'])||x.begin),fd((h&&h.dtps['349'])||x.end)])})});return o}
+function toXml(){const{P,S}=state,H=P.H,t=(n,v)=>v?`<${n}>${xe(v)}</${n}>`:'',ent=(n,o)=>o?`<${n}>${t('Name',o.name)}${t('IdQualifier',o.idq)}${t('Id',o.id)}</${n}>`:'';
+ return `<?xml version="1.0" encoding="UTF-8"?>\n<Enrollment834>\n <Header>${t('Sender',H.sender)}${t('Receiver',H.receiver)}${t('FileDate',H.fileDate)}${t('ReferenceId',H.ref)}${t('Purpose',H.purpose)}${t('Action',H.action)}${ent('Sponsor',H.sponsor)}${ent('Carrier',H.payer)}${ent('TPA',H.tpa)}</Header>\n <Summary employees="${S.emp}" employeesActive="${S.empA}" employeesTerminated="${S.empT}" dependents="${S.dep}" dependentsActive="${S.depA}" dependentsTerminated="${S.depT}" total="${S.total}"/>\n <Members>\n`+
+ P.members.map(x=>`  <Member type="${x.sub?'Employee':'Dependent'}" status="${x.term?'Terminated':'Active'}">${t('Relationship',REL[x.rel]||x.rel)}${t('SubscriberId',x.subId)}${t('MemberId',x.id)}${t('LastName',x.last)}${t('FirstName',x.first)}${t('MiddleName',x.mid)}${t('DOB',x.dob)}${t('Gender',x.gender)}${t('Address',x.addr)}${t('City',x.city)}${t('State',x.st)}${t('Zip',x.zip)}${t('MaintenanceType',x.maint)}${t('BenefitStatus',x.bstat)}${t('Group',x.group)}\n   <Coverages>${x.hds.map(h=>`<Coverage>${t('Line',h.line)}${t('Plan',h.plan)}${t('Level',h.level)}${t('Maintenance',h.maint)}${t('Begin',h.dtps['348']||x.begin)}${t('End',h.dtps['349']||x.end)}</Coverage>`).join('')}</Coverages>\n  </Member>`).join('\n')+'\n </Members>\n</Enrollment834>\n'}
+function save(name,data,ok){
+  const m=$('#msg')||{};
+  try{
+    const blob=new Blob([data],{type:'application/octet-stream'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=name;
+    a.style.display='none';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.setTimeout(()=>URL.revokeObjectURL(url),1000);
+    m.textContent=ok||('Download started: '+name);
+  }catch(e){
+    m.textContent='Download unavailable: '+(e&&e.message||e);
+  }
+}
+function exp(k,filtered){
+ const{P,S}=state,b=(P.H.sponsor?.name||'834').replace(/\W+/g,'_')+'_'+today,list=filtered?rowsFiltered():P.members;
+ if(k==='csv')return save(b+'_members.csv','\uFEFF'+[COLS,...flat(list)].map(r=>r.map(cq).join(',')).join('\n'));
+ if(k==='plans')return save(b+'_plan_summary.csv','\uFEFF'+[['Insurance Line','Plan','Employees Active','Employees Terminated','Dependents Active','Dependents Terminated','Total'],...Object.entries(S.plans).map(([key,p])=>{const[l,n]=key.split('|');return[l,n,p.eA,p.eT,p.dA,p.dT,p.eA+p.eT+p.dA+p.dT]})].map(r=>r.map(cq).join(',')).join('\n'));
+ if(k==='xml')return save(b+'.xml.txt',toXml(),'Saved XML as .xml.txt. Rename it to .xml.');
+ if(k==='copyxml')return navigator.clipboard.writeText(toXml()).then(()=>{$('#msg').textContent='XML copied to clipboard.'},()=>{$('#msg').textContent='Copy blocked by the browser. Use the XML button.'});
+ if(k==='json')return save(b+'.json',JSON.stringify({header:P.H,summary:S,members:P.members.map(({idx,...x})=>x)},null,2));
+}
+/* ---- inputs ---- */
+// Selected file contents are read by the browser File API and passed to the local parser.
+// This page intentionally contains no network upload or AI-service integration.
+function run(text){
+  try{render(parse(text))}catch(e){let w=$('#drop .warn');if(!w){w=document.createElement('div');w.className='warn';$('#drop').prepend(w)}w.textContent=e.message}
+}
+$('#file').onchange=e=>{const f=e.target.files[0];if(f)f.text().then(run)};
+$('#paste').onclick=()=>run($('#txt').value);
+const dz=$('#drop');
+['dragover','dragenter'].forEach(n=>dz.addEventListener(n,e=>{e.preventDefault();dz.classList.add('on')}));
+['dragleave','drop'].forEach(n=>dz.addEventListener(n,e=>{e.preventDefault();dz.classList.remove('on')}));
+dz.addEventListener('drop',e=>{const f=e.dataTransfer.files[0];if(f)f.text().then(run)});
+$('#theme').onclick=()=>{const r=document.documentElement,d=r.dataset.theme==='dark'||(!r.dataset.theme&&matchMedia('(prefers-color-scheme:dark)').matches);r.dataset.theme=d?'light':'dark'};
+$('#sample').onclick=()=>{
+  const s=(...a)=>a.join('*'),isa='ISA*00*'+''.padEnd(10)+'*00*'+''.padEnd(10)+'*ZZ*'+'ACMEHR'.padEnd(15)+'*ZZ*'+'BLUECARR'.padEnd(15)+'*260901*1015*^*00501*000000042*0*P*:';
+  const mem=(sub,rel,maint,bs,last,first,id,dob,g,hds,b,e)=>[s('INS',sub,rel,maint,'XN',bs,'','','FT'),s('REF','0F',id),s('REF','1L','GRP-5521'),s('DTP','356','D8',b),...(e?[s('DTP','357','D8',e)]:[]),s('NM1','IL','1',last,first,'','','','34',id+(sub==='N'?'01':'')),s('N3','12 MG Road'),s('N4','Bengaluru','KA','560001'),s('DMG','D8',dob,g),
+    ...hds.flatMap(h=>[s('HD',maint==='024'?'024':'021','',h[0],h[1],h[2]),s('DTP','348','D8',b),...(e?[s('DTP','349','D8',e)]:[])])];
+  const PPO=['HLT','PPO GOLD'],HDHP=['HLT','HDHP SILVER'],DEN=['DEN','DENTAL BASIC'];
+  const segs=[isa,s('GS','BE','ACMEHR','BLUECARR','20260901','1015','42','X','005010X220A1'),s('ST','834','0001','005010X220A1'),s('BGN','00','FILE0901','20260901','101500','','','','2'),
+   s('N1','P5','Acme Manufacturing Pvt Ltd','FI','123456789'),s('N1','IN','BlueCarrier Health Plan','FI','987654321'),
+   ...mem('Y','18','021','A','Smith','John','S1001','19800412','M',[[...PPO,'FAM'],[...DEN,'FAM']].map(([a,b,c])=>[a,b,c]),'20260101'),
+   ...mem('N','01','021','A','Smith','Jane','S1001','19820730','F',[[...PPO,'FAM']],'20260101'),
+   ...mem('N','19','021','A','Smith','Tim','S1001','20100215','M',[[...PPO,'FAM']],'20260101'),
+   ...mem('Y','18','021','A','Garcia','Maria','S1002','19900101','F',[[...HDHP,'EMP']],'20260101'),
+   ...mem('Y','18','024','A','Lee','Robert','S1003','19750919','M',[[...PPO,'IND']],'20260101','20260630'),
+   ...mem('Y','18','021','A','Patel','Ana','S1004','19881122','F',[[...PPO,'ESP'],[...DEN,'IND']],'20260101'),
+   ...mem('N','01','021','A','Patel','Raj','S1004','19860303','M',[[...PPO,'ESP']],'20260101')];
+  segs.push(s('SE',segs.length-1,'0001'),s('GE','1','42'),s('IEA','1','000000042'));
+  run(segs.join('~\n')+'~');
+};
+</script>
+</body>
+</html>
